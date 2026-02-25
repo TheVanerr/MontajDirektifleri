@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="tr" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makine Modelleri Kataloğu</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Space Grotesk', sans-serif; }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-4px); }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    body { box-sizing: border-box; }
+  </style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full overflow-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+   <!-- Header -->
+   <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+     <div class="flex items-center justify-between">
+      <div>
+       <h1 id="site-title" class="text-2xl font-bold text-white">Makine Modelleri - GÜNCEL</h1>
+       <p id="subtitle" class="text-slate-400 text-sm">Montaj Direktifleri Kataloğu</p>
+      </div>
+      <div class="flex items-center gap-2">
+       <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+       <span class="text-slate-400 text-sm">Aktif</span>
+      </div>
+     </div>
+    </div>
+   </header>
+
+   <!-- Breadcrumb -->
+   <div id="breadcrumb" class="max-w-7xl mx-auto px-4 py-3 hidden">
+    <div class="flex items-center gap-2 text-slate-400">
+     <button id="back-btn" class="flex items-center gap-1 hover:text-white transition-colors hover:underline">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      <span>Ana Menü</span>
+     </button>
+     <span id="breadcrumb-sep-1" class="hidden">›</span>
+     <span id="breadcrumb-cat" class="hidden text-white hover:text-slate-300 cursor-pointer transition-colors"></span>
+     <span id="breadcrumb-sep-2" class="hidden">›</span>
+     <span id="breadcrumb-model" class="hidden text-white"></span>
+    </div>
+   </div>
+
+   <!-- Main Content -->
+   <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Ana Kategoriler -->
+    <div id="main-categories" class="fade-in">
+     <div class="mb-8">
+      <h2 class="text-3xl font-bold text-white mb-2">Makine Kategorileri</h2>
+      <p class="text-slate-400">Montaj direktiflerini görüntülemek için bir kategori seçin</p>
+     </div>
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="category-grid"></div>
+    </div>
+
+    <!-- Alt Modeller -->
+    <div id="sub-models" class="hidden fade-in">
+     <div class="mb-8">
+      <h2 id="category-title" class="text-3xl font-bold text-white mb-2"></h2>
+      <p class="text-slate-400">Model kartına tıklayarak montaj direktiflerine ulaşın</p>
+     </div>
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="model-grid"></div>
+    </div>
+
+    <!-- Montaj Direktifleri -->
+    <div id="assembly-view" class="hidden fade-in">
+     <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8">
+      <div class="flex items-center gap-4 mb-6">
+       <div id="model-icon" class="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold"></div>
+       <div>
+        <h2 id="model-title" class="text-2xl font-bold text-white"></h2>
+        <p class="text-slate-400">Montaj Direktifleri</p>
+       </div>
+      </div>
+      <div id="assembly-content" class="space-y-3"></div>
+     </div>
+    </div>
+   </main>
+
+   <!-- Footer -->
+   <footer class="max-w-7xl mx-auto px-4 py-8 mt-8 border-t border-slate-800">
+    <p class="text-center text-slate-500 text-sm">© 2024 Makine Modelleri Kataloğu</p>
+   </footer>
+
+   <!-- Fotoğraf Modal (Lightbox) -->
+   <div id="imageModal" class="hidden fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" onclick="closeImageModal()">
+    <button class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors" onclick="closeImageModal()">
+     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+     </svg>
+    </button>
+    <img id="modalImage" src="" alt="Büyük görsel" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl" onclick="event.stopPropagation()">
+   </div>
+  </div>
+
+  <!-- Kategori Veri Dosyaları -->
+  <script src="lym.js"></script>
+  <script src="vdl.js"></script>
+  <script src="kbn.js"></script>
+  <script src="ult.js"></script>
+  <script src="rts.js"></script>
+  <script src="pyt.js"></script>
+  <script src="mst.js"></script>
+
+  <!-- Firebase SDK (v10.8.0) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAe-SI_4UaEDElcyBLvVBiLl5V295hypXs",
+      authDomain: "montajdirektifleri.firebaseapp.com",
+      projectId: "montajdirektifleri",
+      storageBucket: "montajdirektifleri.firebasestorage.app",
+      messagingSenderId: "222012775553",
+      appId: "1:222012775553:web:56b901dc79461437e48180"
+    };
+
+    // Firebase'i başlat
+    firebase.initializeApp(firebaseConfig);
+    const storage = firebase.storage();
+    
+    console.log('✅ Firebase Storage hazır!');
+  </script>
+
+  <script>
+    // Tüm kategori verilerini birleştir
+    const machineData = {
+      LYM: lymData,
+      VDL: vdlData,
+      KBN: kbnData,
+      ULT: ultData,
+      RTS: rtsData,
+      PYT: pytData,
+      MST: mstData
+    };
+
+    // Tüm montaj direktiflerini birleştir
+    const assemblyDirectives = {
+      ...lymDirectives,
+      ...vdlDirectives,
+      ...kbnDirectives,
+      ...ultDirectives,
+      ...rtsDirectives,
+      ...pytDirectives,
+      ...mstDirectives
+    };
+
+    // Fotoğraf modal fonksiyonları
+    function openImageModal(imageUrl) {
+      const modal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      modalImage.src = imageUrl;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // Scroll'u kapat
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto'; // Scroll'u aç
+    }
+
+    // ESC tuşu ile kapat
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeImageModal();
+    });
+
+    // Durum yönetimi
+    let currentView = 'main';
+    let currentCategory = null;
+    let currentModel = null;
+
+    // DOM elementleri
+    const mainCategories = document.getElementById('main-categories');
+    const subModels = document.getElementById('sub-models');
+    const assemblyView = document.getElementById('assembly-view');
+    const breadcrumb = document.getElementById('breadcrumb');
+    const backBtn = document.getElementById('back-btn');
+    const categoryGrid = document.getElementById('category-grid');
+    const modelGrid = document.getElementById('model-grid');
+    const categoryTitle = document.getElementById('category-title');
+    const modelTitle = document.getElementById('model-title');
+    const modelIcon = document.getElementById('model-icon');
+
+    // Kategori kartı oluştur
+    function createCategoryCard(key, data) {
+      const card = document.createElement('div');
+      card.className = 'card-hover cursor-pointer bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-slate-600 hover:bg-slate-800/80';
+      card.innerHTML = `
+        <div class="w-14 h-14 rounded-lg flex items-center justify-center text-xl font-bold text-white mb-4" style="background: ${data.color}20; border: 2px solid ${data.color}">
+          ${key}
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">${data.name}</h3>
+        <p class="text-slate-400 text-sm">${data.models.length} model</p>
+        <div class="mt-4 flex items-center text-slate-400 text-sm">
+          <span>Modelleri gör</span>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      `;
+      card.addEventListener('click', () => showSubModels(key));
+      return card;
+    }
+
+    // Model kartı oluştur
+    function createModelCard(model, color) {
+      const card = document.createElement('div');
+      card.className = 'card-hover cursor-pointer bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-slate-600 hover:bg-slate-800/80';
+      card.innerHTML = `
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center text-sm font-bold text-white mb-3" style="background: ${color}30; border: 2px solid ${color}">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-1">${model}</h3>
+        <p class="text-slate-400 text-sm">Montaj direktifi</p>
+      `;
+      card.addEventListener('click', () => showAssembly(model, color));
+      return card;
+    }
+
+    // Ana kategorileri göster
+    function showMainCategories() {
+      currentView = 'main';
+      currentCategory = null;
+      currentModel = null;
+
+      mainCategories.classList.remove('hidden');
+      subModels.classList.add('hidden');
+      assemblyView.classList.add('hidden');
+      breadcrumb.classList.add('hidden');
+    }
+
+    // Alt modelleri göster
+    function showSubModels(key) {
+      currentView = 'sub';
+      currentCategory = key;
+
+      const data = machineData[key];
+      categoryTitle.textContent = `${data.name} Modelleri`;
+
+      modelGrid.innerHTML = '';
+      data.models.forEach(model => {
+        modelGrid.appendChild(createModelCard(model, data.color));
+      });
+
+      mainCategories.classList.add('hidden');
+      subModels.classList.remove('hidden');
+      assemblyView.classList.add('hidden');
+      breadcrumb.classList.remove('hidden');
+
+      updateBreadcrumb();
+    }
+
+    // Montaj direktiflerini göster
+    function showAssembly(model, color) {
+      currentView = 'assembly';
+      currentModel = model;
+
+      modelTitle.textContent = model;
+      modelIcon.style.background = `${color}30`;
+      modelIcon.style.border = `2px solid ${color}`;
+      modelIcon.style.color = color;
+      modelIcon.textContent = model.split(' ')[0];
+
+      const assemblyContent = document.getElementById('assembly-content');
+      assemblyContent.innerHTML = '';
+
+      const steps = assemblyDirectives[model] || [];
+
+      if (steps.length === 0) {
+        assemblyContent.innerHTML = `
+          <div class="bg-slate-900/50 rounded-xl p-6 border border-slate-700/30">
+            <div class="flex flex-col items-center justify-center py-8 text-center">
+              <svg class="w-12 h-12 text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-slate-400">Bu model için henüz montaj direktifi eklenmemiştir.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        steps.forEach((step, index) => {
+          assemblyContent.appendChild(createAccordionCard(step, color, index));
+        });
+      }
+
+      mainCategories.classList.add('hidden');
+      subModels.classList.add('hidden');
+      assemblyView.classList.remove('hidden');
+      breadcrumb.classList.remove('hidden');
+
+      updateBreadcrumb();
+    }
+
+    // Accordion kartı oluştur (açılır/kapanır)
+    function createAccordionCard(step, color, index) {
+      const container = document.createElement('div');
+      container.className = 'border border-slate-700/50 rounded-xl overflow-hidden bg-slate-800/30 hover:border-slate-600/50 transition-all duration-300';
+
+      const header = document.createElement('button');
+      header.className = 'w-full px-6 py-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors';
+      header.innerHTML = `
+        <div class="flex items-center gap-4 text-left">
+          <div class="flex items-center justify-center w-10 h-10 rounded-lg text-sm font-bold text-white" style="background: ${color}30; border: 2px solid ${color}">
+            ${index + 1}
+          </div>
+          <h3 class="text-white font-semibold text-lg">${step.title}</h3>
+        </div>
+        <svg class="w-6 h-6 text-slate-400 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      `;
+
+      const content = document.createElement('div');
+      content.className = 'hidden overflow-hidden transition-all duration-300 ease-out';
+      
+      let imagesHTML = '';
+      if (step.images && step.images.length > 0) {
+        imagesHTML = `
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            ${step.images.map(img => {
+              // String veya obje formatını destekle
+              const imgUrl = typeof img === 'string' ? img : img.url;
+              const imgCaption = typeof img === 'object' && img.caption ? img.caption : '';
+              
+              return `
+                <div class="group">
+                  <img src="${imgUrl}" alt="Montaj görseli" 
+                       class="w-full h-80 object-cover rounded-lg border border-slate-600/50 hover:border-slate-500 transition-all cursor-pointer hover:scale-105" 
+                       onclick="openImageModal('${imgUrl}')">
+                  ${imgCaption ? `<p class="text-white text-base font-semibold mt-6 px-5 py-4 bg-slate-800 rounded-xl border-2 border-slate-600 shadow-xl">${imgCaption}</p>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+      
+      content.innerHTML = `
+        <div class="px-6 py-5 border-t border-slate-700/30 bg-slate-900/30">
+          <p class="text-slate-300 leading-relaxed">${step.description}</p>
+          ${imagesHTML}
+        </div>
+      `;
+
+      let isOpen = false;
+
+      header.addEventListener('click', () => {
+        isOpen = !isOpen;
+        if (isOpen) {
+          content.classList.remove('hidden');
+          content.style.maxHeight = content.scrollHeight + 'px';
+          header.querySelector('svg').style.transform = 'rotate(90deg)';
+          container.style.borderColor = color;
+        } else {
+          content.style.maxHeight = '0';
+          header.querySelector('svg').style.transform = 'rotate(0deg)';
+          container.style.borderColor = '';
+          setTimeout(() => content.classList.add('hidden'), 300);
+        }
+      });
+
+      container.appendChild(header);
+      container.appendChild(content);
+      return container;
+    }
+
+    // Breadcrumb güncelle
+    function updateBreadcrumb() {
+      const sep1 = document.getElementById('breadcrumb-sep-1');
+      const sep2 = document.getElementById('breadcrumb-sep-2');
+      const breadcrumbCat = document.getElementById('breadcrumb-cat');
+      const breadcrumbModel = document.getElementById('breadcrumb-model');
+
+      if (currentView === 'sub') {
+        sep1.classList.remove('hidden');
+        breadcrumbCat.classList.remove('hidden');
+        breadcrumbCat.textContent = machineData[currentCategory].name;
+        sep2.classList.add('hidden');
+        breadcrumbModel.classList.add('hidden');
+      } else if (currentView === 'assembly') {
+        sep1.classList.remove('hidden');
+        breadcrumbCat.classList.remove('hidden');
+        breadcrumbCat.textContent = machineData[currentCategory].name;
+        sep2.classList.remove('hidden');
+        breadcrumbModel.classList.remove('hidden');
+        breadcrumbModel.textContent = currentModel;
+      }
+    }
+
+    // Geri butonu
+    backBtn.addEventListener('click', () => {
+      if (currentView === 'assembly') {
+        showSubModels(currentCategory);
+      } else if (currentView === 'sub') {
+        showMainCategories();
+      }
+    });
+
+    // Breadcrumb kategorisine tıkla
+    document.getElementById('breadcrumb-cat').addEventListener('click', () => {
+      showSubModels(currentCategory);
+    });
+
+    // Başlangıçta kategorileri yükle
+    function init() {
+      Object.keys(machineData).forEach(key => {
+        categoryGrid.appendChild(createCategoryCard(key, machineData[key]));
+      });
+    }
+
+    init();
+  </script>
+ </body>
+</html>
